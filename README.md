@@ -1,0 +1,2 @@
+# Yclor_Contrl-Smartly-2026
+这是一个针对xtu自动化专业大四中智能控制代码实现的库，包含但不限于多场景模糊自适应PID控制的amtlab和python实现，以及PPT制作指导过程
