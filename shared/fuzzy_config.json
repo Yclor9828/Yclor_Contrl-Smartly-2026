@@ -1,0 +1,135 @@
+{
+  "meta": {
+    "name": "fuzzy_adaptive_pid",
+    "version": "2.0",
+    "note": "Single source of truth shared by Python, MATLAB and the generated .fis file. ASCII only on purpose.",
+    "labels_note": "index 0..6 -> NB NM NS ZO PS PM PB, rule values are the universe centers in {-3,-2,-1,0,1,2,3}"
+  },
+  "fuzzy": {
+    "labels": ["NB", "NM", "NS", "ZO", "PS", "PM", "PB"],
+    "universe": [-3.0, 3.0],
+    "centers": [-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0],
+    "mf": {
+      "NB": {"type": "trapmf", "params": [-4.0, -3.0, -2.0, -1.0]},
+      "NM": {"type": "trimf", "params": [-3.0, -2.0, -1.0]},
+      "NS": {"type": "trimf", "params": [-2.0, -1.0, 0.0]},
+      "ZO": {"type": "trimf", "params": [-1.0, 0.0, 1.0]},
+      "PS": {"type": "trimf", "params": [0.0, 1.0, 2.0]},
+      "PM": {"type": "trimf", "params": [1.0, 2.0, 3.0]},
+      "PB": {"type": "trapmf", "params": [1.0, 2.0, 3.0, 4.0]}
+    },
+    "rules": {
+      "dkp": [
+        [3, 3, 3, 3, 2, 2, 2],
+        [3, 3, 3, 2, 2, 1, 1],
+        [2, 2, 2, 1, 0, 0, 0],
+        [1, 1, 0, 0, 0, 1, 1],
+        [0, 0, 0, 1, 2, 2, 2],
+        [1, 1, 2, 2, 3, 3, 3],
+        [2, 2, 2, 3, 3, 3, 3]
+      ],
+      "dki": [
+        [-3, -3, -3, -3, -2, -1, 0],
+        [-3, -2, -2, -2, -1, 0, 1],
+        [-2, -1, 0, 1, 2, 2, 2],
+        [-1, 0, 2, 3, 2, 0, -1],
+        [2, 2, 2, 1, 0, -1, -2],
+        [1, 0, -1, -2, -2, -2, -3],
+        [0, -1, -2, -3, -3, -3, -3]
+      ],
+      "dkd": [
+        [0, 0, 1, 1, 2, 3, 3],
+        [0, 1, 1, 2, 2, 3, 3],
+        [1, 1, 2, 2, 3, 3, 2],
+        [2, 2, 3, 3, 3, 2, 2],
+        [2, 3, 3, 2, 2, 1, 1],
+        [3, 3, 2, 2, 1, 1, 0],
+        [3, 3, 2, 1, 1, 0, 0]
+      ]
+    }
+  },
+  "scenarios": {
+    "thermal": {
+      "comment": "Industrial electric resistance furnace, first order plus dead time (FOPDT).",
+      "plant": {
+        "model": "fopdt",
+        "K": 1.5,
+        "T": 25.0,
+        "tau": 5.0,
+        "y0": 20.0,
+        "u_min": 0.0,
+        "u_max": 100.0
+      },
+      "simulation": {"dt": 0.2, "t_end": 280.0},
+      "reference": {"segments": [[0.0, 100.0], [200.0, 125.0]]},
+      "disturbance": {"t_on": 130.0, "t_off": 200.0, "amplitude": -18.0},
+      "phases": {"step1": [0.0, 130.0], "dist": [130.0, 200.0], "step2": [200.0, 280.0]},
+      "pid": {
+        "kp0": 3.5,
+        "ki0": 0.08,
+        "kd0": 1.2,
+        "ke": 0.0375,
+        "kec": 0.4,
+        "kup": 1.2,
+        "kui": 0.035,
+        "kud": 2.5
+      }
+    },
+    "motor": {
+      "comment": "DC servo motor speed loop, electrical + mechanical states coupled.",
+      "plant": {
+        "model": "dc_motor",
+        "Ra": 1.2,
+        "La": 0.03,
+        "Kt": 0.08,
+        "Ke": 0.08,
+        "B": 0.005,
+        "J0": 0.008,
+        "u_min": -36.0,
+        "u_max": 36.0
+      },
+      "simulation": {"dt": 0.001, "t_end": 6.0},
+      "reference": {"segments": [[0.0, 100.0], [3.8, 130.0]]},
+      "load_torque": {"t_on": 2.0, "amplitude": 0.25},
+      "inertia": {"t_on": 3.8, "scale": 2.5},
+      "phases": {"step1": [0.0, 2.0], "load": [2.0, 3.8], "inertia_step": [3.8, 6.0]},
+      "pid": {
+        "kp0": 0.8,
+        "ki0": 18.0,
+        "kd0": 0.005,
+        "ke": 0.03,
+        "kec": 0.01,
+        "kup": 0.4,
+        "kui": 10.0,
+        "kud": 0.012
+      }
+    },
+    "level": {
+      "comment": "Dual-capacity liquid level process (SOPDT). G(s)=K/((T1s+1)(T2s+1))*exp(-tau*s). Setpoint: 20%->60% level, then 60%->40%.",
+      "plant": {
+        "model": "sopdt",
+        "K": 0.96,
+        "T1": 30.0,
+        "T2": 15.0,
+        "tau": 3.0,
+        "y0": 20.0,
+        "u_min": 0.0,
+        "u_max": 100.0
+      },
+      "simulation": {"dt": 0.5, "t_end": 350.0},
+      "reference": {"segments": [[0.0, 60.0], [230.0, 40.0]]},
+      "disturbance": {"t_on": 120.0, "t_off": 150.0, "amplitude": 15.0},
+      "phases": {"step1": [0.0, 120.0], "dist": [120.0, 230.0], "step2": [230.0, 350.0]},
+      "pid": {
+        "kp0": 1.8,
+        "ki0": 0.025,
+        "kd0": 3.0,
+        "ke": 0.0625,
+        "kec": 0.5,
+        "kup": 1.0,
+        "kui": 0.02,
+        "kud": 3.0
+      }
+    }
+  }
+}

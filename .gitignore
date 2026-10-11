@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# MATLAB 临时文件
+*.asv
+*.autosave
+slprj/
+*.slxc
+*.mex*
+
+# 编辑器/系统/Office临时锁文件与隐私表格
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+~$*
+*.xlsx
+
+
